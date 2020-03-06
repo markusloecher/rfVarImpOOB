@@ -8,7 +8,7 @@ GiniImportanceForest <- structure(function#computes inbag and OOB Gini importanc
   agg = c("mean","median","none")[1], ##<< method of aggregating importance scores across trees. If "none" return the raw arrays (for debugging)
   score=c("PMDI21", "MDI","MDA","MIA")[1], ##<< scoring method:MDI=mean decrease impurity (Gini),MDA=mean decrease accuracy (permutation),MIA=mean increase accuracy
   Predictor=mean, ##<< function to estimate node prediction, such as Mode or mean or median. Alternatively, pass an array of numbers as replacement for the yHat column of tree
-  correctBias = FALSE, ##<< multiply by n/(n-1) for sample variance correction!
+  correctBias = c(inbag=TRUE,outbag=TRUE), ##<< multiply by n/(n-1) for sample variance correction!
   verbose=0 ##<< level of verbosity
 ){
   stopifnot(!is.null(RF$inbag))

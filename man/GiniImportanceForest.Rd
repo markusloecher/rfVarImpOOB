@@ -5,7 +5,7 @@
 \usage{GiniImportanceForest(RF, data, ylabel = "Survived", 
     zeroLeaf = TRUE, agg = c("mean", "median", "none")[1], 
     score = c("PMDI21", "MDI", "MDA", "MIA")[1], Predictor = mean, 
-    correctBias = FALSE, verbose = 0)}
+    correctBias = c(inbag = TRUE, outbag = TRUE), verbose = 0)}
 \arguments{
   \item{RF}{object returned by call to randomForest()}
   \item{data}{data which was used to train the RF. NOTE: assumes setting of inbag=TRUE while training}

@@ -15,7 +15,7 @@ GiniImportanceTree <- structure(function# computes Gini information gain for one
   ### MDI=mean decrease impurity (Gini), MDA=mean decrease accuracy (permutation),
   ### MIA=mean increase accuracy
   Predictor=mean, ##<< function to estimate node prediction, such as Mode or mean or median. Alternatively, pass an array of numbers as replacement for the yHat column of tree
-  correctBias = TRUE, ##<< multiply by n/(n-1) for sample variance correction!
+  correctBias = c(inbag=TRUE,outbag=TRUE), ##<< multiply by n/(n-1) for sample variance correction!
   verbose=0 ##<< level of verbosity
 ){
   #brain dead "solution"  to the CRAN note issues,
@@ -68,12 +68,11 @@ GiniImportanceTree <- structure(function# computes Gini information gain for one
       #if (verbose) cat("pOut, pIn", pOut, pIn, "gOut, gIn", gOut, gIn, "\n")
       
       #try corrected sample variance!
-      if (correctBias) {
-        if (nNodeIn>1) gIn = nNodeIn/(nNodeIn-1)*gIn
-        if (nNodeOut>1) gOut = nNodeOut/(nNodeOut-1)*gOut
+      if (correctBias[1]) if (nNodeIn>1) gIn = nNodeIn/(nNodeIn-1)*gIn
+      if (correctBias[2]) if (nNodeOut>1) gOut = nNodeOut/(nNodeOut-1)*gOut
         #if (nNode<7) cat("nNode=",nNode, "pOut=",pOut,  ",corrected gOut, gIn", gOut, gIn, "\n")
         #if (verbose) cat( "corrected gOut, gIn", gOut, gIn, "\n")
-      }
+      
       tree$pIn_gini[j] = gIn;tree$pOut_gini[j] = gOut
       tree$nNodeIn[j] = nNodeIn;tree$nNodeOut[j] = nNodeOut
       tree$pgOOB0[j] = 2*gOut  

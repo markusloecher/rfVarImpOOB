@@ -6,7 +6,7 @@ These can be based on Gini impurity or Accuracy or logloss }
 \usage{GiniImportanceTree(inbag, outbag, RF, k, ylabel = "Survived", 
     returnTree = FALSE, zeroLeaf = TRUE, score = c("PMDI21", 
         "MDI", "MDA", "MIA")[1], Predictor = mean, 
-    correctBias = TRUE, verbose = 0)}
+    correctBias = c(inbag = TRUE, outbag = TRUE), verbose = 0)}
 \arguments{
   \item{inbag}{inbag data}
   \item{outbag}{
@@ -36,10 +36,15 @@ MIA=mean increase accuracy}
 rfTit = rfTitanic(nRows = 500,nodesize=10)
 rfTit$data$Survived = as.numeric(rfTit$data$Survived)-1
 k=1
-tmp <- InOutBags(rfTit$RF, rfTit$data, k)
-IndivTree =getTree(rfTit$RF,k)
-#plot(as.party(tmp))#does not work
-InTree = GiniImportanceTree(tmp$inbag,rfTit$RF,k,returnTree=TRUE)
-OutTree = GiniImportanceTree(tmp$outbag,rfTit$RF,k,returnTree=TRUE)
+inbag = rep(rownames(rfTit$RF$inbag),time=rfTit$RF$inbag[,k])
+#trainBag=titanic_train[inbag,]
+trainBag=rfTit$data[inbag,];rownames(trainBag)  = 1:nrow(trainBag)
+outbag = names((rfTit$RF$inbag[rfTit$RF$inbag[,k]==0,k]))
+OOB = rfTit$data[outbag,];rownames(OOB)  = 1:nrow(OOB)
+
+Imp =GiniImportanceTree(trainBag,OOB, RF,k,ylabel="Survived")
+                          
+Tree = GiniImportanceTree(trainBag,OOB, RF,k,ylabel="Survived",returnTree=TRUE)
+
 
 }

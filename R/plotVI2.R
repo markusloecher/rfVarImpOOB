@@ -2,7 +2,7 @@ plotVI2 = structure(function# creates barplots for variable importances
 ### creates barplots for variable importances including permutation scores
 (
   VIbench, ##<< matrix with importance scores as returned by GiniImportanceForest
-  col2plot = "IG_pgOOB2", #<< which column should be plotted
+  col2plot = paste0("IG_pgOOB",2), #<< which column(s) should be plotted
   Gini_inbag_col = "IG_pgOOB4", #<< which column should be interpreted as inbag impurity
   decreasing = TRUE, ##<< which direction to sort
   with_MDA=TRUE, ##<< also visualize mean decrease in accuracy (permutation importance)
