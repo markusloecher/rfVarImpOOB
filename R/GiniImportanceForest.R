@@ -9,6 +9,7 @@ GiniImportanceForest <- structure(function#computes inbag and OOB Gini importanc
   score=c("PMDI21", "MDI","MDA","MIA")[1], ##<< scoring method:MDI=mean decrease impurity (Gini),MDA=mean decrease accuracy (permutation),MIA=mean increase accuracy
   Predictor=mean, ##<< function to estimate node prediction, such as Mode or mean or median. Alternatively, pass an array of numbers as replacement for the yHat column of tree
   correctBias = c(inbag=TRUE,outbag=TRUE), ##<< multiply by n/(n-1) for sample variance correction!
+  ImpTypes= 0:5, ##<< which scores should be computed
   verbose=0 ##<< level of verbosity
 ){
   stopifnot(!is.null(RF$inbag))
@@ -21,7 +22,7 @@ GiniImportanceForest <- structure(function#computes inbag and OOB Gini importanc
   VIbench = as.data.frame(randomForest::importance(RF))
   vars = rownames(VIbench)
   Gini_OOB = list()
-  for (j in 0:4)
+  for (j in ImpTypes)
     Gini_OOB[[j+1]] = matrix(0,nrow=length(vars),ncol=nTrees,dimnames=list(vars,1:nTrees))
   #Gini_OOB3=Gini_OOB2=Gini_OOB1=Gini_OOB0=Gini_OOB4
   #VItrain = c(PassengerId=0, Sex=0, Pclass=0)
@@ -40,7 +41,7 @@ GiniImportanceForest <- structure(function#computes inbag and OOB Gini importanc
     Imp =GiniImportanceTree(trainBag, OOB, RF,k,ylabel=ylabel, zeroLeaf=zeroLeaf,
                             score=score,correctBias=correctBias)
     stopifnot(all(rownames(Imp) %in% rownames(Gini_OOB[[j+1]])))
-    for (j in 0:4)
+    for (j in ImpTypes)
       Gini_OOB[[j+1]][rownames(Imp),k] = Imp[,paste0("IG_pgOOB",j)]
    
      #if (verbose<0) outTree[[k]] =GiniImportanceTree(OOB, RF, k,returnTree=TRUE,ylabel=ylabel, Predictor=inTree[[k]]$yHat, zeroLeaf=zeroLeaf,score=score,correctBias=correctBias)
@@ -56,14 +57,14 @@ GiniImportanceForest <- structure(function#computes inbag and OOB Gini importanc
   if (agg == "none"){
     return(Gini_OOB)
   } else if (agg == "mean"){
-    for (j in 0:4)
+    for (j in ImpTypes)
       VIbench[,paste0("IG_pgOOB",j)] = rowMeans(Gini_OOB[[j+1]], na.rm = TRUE)
    
   } else if (agg == "median"){
-    for (j in 0:4)
+    for (j in ImpTypes)
       VIbench[,paste0("IG_pgOOB",j)] = apply(Gini_OOB[[j+1]],1,median, na.rm = TRUE)
   }
-  for (j in 0:4)
+  for (j in ImpTypes)
     VIbench[,paste0("IG_pgOOB",j, "_sd")] = apply(Gini_OOB[[j+1]],1,sd, na.rm = TRUE)/sqrt(ncol(Gini_OOB[[j+1]]))
   
   

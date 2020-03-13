@@ -6,7 +6,8 @@ These can be based on Gini impurity or Accuracy or logloss }
 \usage{GiniImportanceTree(inbag, outbag, RF, k, ylabel = "Survived", 
     returnTree = FALSE, zeroLeaf = TRUE, score = c("PMDI21", 
         "MDI", "MDA", "MIA")[1], Predictor = mean, 
-    correctBias = c(inbag = TRUE, outbag = TRUE), verbose = 0)}
+    correctBias = c(inbag = TRUE, outbag = TRUE), ImpTypes = 0:5, 
+    verbose = 0)}
 \arguments{
   \item{inbag}{inbag data}
   \item{outbag}{
@@ -21,6 +22,7 @@ MDI=mean decrease impurity (Gini), MDA=mean decrease accuracy (permutation),
 MIA=mean increase accuracy}
   \item{Predictor}{function to estimate node prediction, such as Mode or mean or median. Alternatively, pass an array of numbers as replacement for the yHat column of tree}
   \item{correctBias}{multiply by n/(n-1) for sample variance correction!}
+  \item{ImpTypes}{which scores should be computed}
   \item{verbose}{level of verbosity}
 }
 

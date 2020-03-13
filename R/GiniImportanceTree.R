@@ -16,6 +16,7 @@ GiniImportanceTree <- structure(function# computes Gini information gain for one
   ### MIA=mean increase accuracy
   Predictor=mean, ##<< function to estimate node prediction, such as Mode or mean or median. Alternatively, pass an array of numbers as replacement for the yHat column of tree
   correctBias = c(inbag=TRUE,outbag=TRUE), ##<< multiply by n/(n-1) for sample variance correction!
+  ImpTypes= 0:5, ##<< which scores should be computed
   verbose=0 ##<< level of verbosity
 ){
   #brain dead "solution"  to the CRAN note issues,
@@ -41,7 +42,7 @@ GiniImportanceTree <- structure(function# computes Gini information gain for one
   # }
   tree$node=tree$pIn=tree$pOut=tree$pIn_gini=tree$Out_gini=NA
   tree$nNodeIn=tree$nNodeOut=NA
-  tree$pgOOB4=tree$pgOOB3=tree$pgOOB2=tree$pgOOB1=tree$pgOOB0=NA
+  tree$pgOOB5=tree$pgOOB4=tree$pgOOB3=tree$pgOOB2=tree$pgOOB1=tree$pgOOB0=NA
   
   
   tree=preorder2(1,inbag,tree)#uses unmodified row names now !! (e.g. "6.1)
@@ -80,6 +81,7 @@ GiniImportanceTree <- structure(function# computes Gini information gain for one
       tree$pgOOB2[j] = gOut + gIn + abs(pOut-pIn)^2
       tree$pgOOB3[j] = gOut + gIn + 0.5*abs(pOut-pIn)^2
       tree$pgOOB4[j] = 2*gIn
+      tree$pgOOB5[j] = pOut*(1-2*pIn) + pIn^2 #Li et all (tree.interpreter)
     } 
   }
   #tree$gini_index[j] = round(gini_index(titanic_train[unlist(tree[j,"node"]),"Survived"]),4)
@@ -97,7 +99,7 @@ GiniImportanceTree <- structure(function# computes Gini information gain for one
   if (verbose>1) browser()
   #return(tree)
   tree$node=NA
-  for (k in 0:4){
+  for (k in ImpTypes){
     tree$gini_index = tree[,paste0("pgOOB",k)]
     #for now we take 
     if (k==4 ){
@@ -105,8 +107,9 @@ GiniImportanceTree <- structure(function# computes Gini information gain for one
     } else if (k==0 | k==1){
       tree$node = tree$node_out
     } else {
-      for (j in 1:nrow(tree))
-         tree$node[j] = list(c(tree$node_in[j], tree$node_out[j])) #for now that is all I can think of!
+      tree$node = tree$node_in
+   #   for (j in 1:nrow(tree))
+   #     tree$node[j] = list(c(tree$node_in[j], tree$node_out[j])) #for now that is all I can think of!
     }
     tree=InfGain(tree, zeroLeaf=zeroLeaf,score=score)
     tree[,paste0("IG_pgOOB",k)] = tree$IG_gini
@@ -115,18 +118,20 @@ GiniImportanceTree <- structure(function# computes Gini information gain for one
   
   if (returnTree) return(tree)
   
+  InnerNodesOnly = tree[!is.na(tree[,c('split var')]),]
+  
   if (score =="MIA") {
-    df = dplyr::group_by(tree[,c('split var', 'IG_acc')], `split var`)
+    df = dplyr::group_by(InnerNodesOnly[,c('split var', 'IG_acc')], `split var`)
     pivot = dplyr::summarise(df,`sum_IG_acc`=sum(`IG_acc`))
     
   } else{
     #browser()
-    #pivot=aggregate(cbind(IG_pgOOB0, IG_pgOOB1, IG_pgOOB2, IG_pgOOB3, IG_pgOOB4) ~ ., data = tree[,c('split var', paste0("IG_pgOOB",0:4))], FUN=sum)
-    f = as.formula(paste0("cbind(",paste0("IG_pgOOB",0:4,collapse=","),") ~ ."))
-    pivot=aggregate(f, data = tree[,c('split var', paste0("IG_pgOOB",0:4))], FUN=sum,na.rm=TRUE)
-    tmp=aggregate(IG_pgOOB0 ~ ., data = tree[,c('split var', paste0("IG_pgOOB",0))], FUN=function(x) length(na.omit(x)))
+    #pivot=aggregate(cbind(IG_pgOOB0, IG_pgOOB1, IG_pgOOB2, IG_pgOOB3, IG_pgOOB4) ~ ., data = tree[,c('split var', paste0("IG_pgOOB",ImpTypes))], FUN=sum)
+    f = as.formula(paste0("cbind(",paste0("IG_pgOOB",ImpTypes,collapse=","),") ~ ."))
+    pivot=aggregate(f, data = InnerNodesOnly[,c('split var', paste0("IG_pgOOB",ImpTypes))], FUN=sum,na.rm=TRUE)
+    tmp=aggregate(IG_pgOOB0 ~ ., data = InnerNodesOnly[,c('split var', paste0("IG_pgOOB",0))], FUN=function(x) length(na.omit(x)))
     pivot$`count` = tmp[,2]
-    #df = dplyr::group_by(tree[,c('split var', paste0("IG_pgOOB",0:4))], `split var`)
+    #df = dplyr::group_by(tree[,c('split var', paste0("IG_pgOOB",ImpTypes))], `split var`)
     #pivot = dplyr::summarise(df,`sum_IG_gini`=sum(`IG_gini`))
   }
   

@@ -5,7 +5,8 @@
 \usage{GiniImportanceForest(RF, data, ylabel = "Survived", 
     zeroLeaf = TRUE, agg = c("mean", "median", "none")[1], 
     score = c("PMDI21", "MDI", "MDA", "MIA")[1], Predictor = mean, 
-    correctBias = c(inbag = TRUE, outbag = TRUE), verbose = 0)}
+    correctBias = c(inbag = TRUE, outbag = TRUE), ImpTypes = 0:5, 
+    verbose = 0)}
 \arguments{
   \item{RF}{object returned by call to randomForest()}
   \item{data}{data which was used to train the RF. NOTE: assumes setting of inbag=TRUE while training}
@@ -15,6 +16,7 @@
   \item{score}{scoring method:MDI=mean decrease impurity (Gini),MDA=mean decrease accuracy (permutation),MIA=mean increase accuracy}
   \item{Predictor}{function to estimate node prediction, such as Mode or mean or median. Alternatively, pass an array of numbers as replacement for the yHat column of tree}
   \item{correctBias}{multiply by n/(n-1) for sample variance correction!}
+  \item{ImpTypes}{which scores should be computed}
   \item{verbose}{level of verbosity}
 }
 
