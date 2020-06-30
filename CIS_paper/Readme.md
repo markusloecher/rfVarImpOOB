@@ -1,4 +1,4 @@
-Supporting code for figures and results for the paper 
+Supporting code for figures and results for the [paper](https://www.tandfonline.com/doi/full/10.1080/03610926.2020.1764042) 
 
 ![CIS_Webpage.PNG](CIS_Webpage.PNG)
 
